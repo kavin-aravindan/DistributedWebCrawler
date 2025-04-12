@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package q2;
+
+// An empty message for requests/responses that don't need parameters.
+message Empty {}
+
+// MasterService defines the gRPC service for task assignment and result submission.
+service MasterService {
+  // AssignTask provides a task (either map or reduce) to the worker.
+  rpc AssignTask(Empty) returns (TaskResponse);
+
+  // SubmitResult is used by the worker to send back the result.
+  rpc SubmitResult(ResultRequest) returns (Empty);
+}
+
+
+// MapTaskResponse is used by the Master to describe a map task to a worker.
+message MapTaskResponse {
+  string InputFile = 1;   // Input file path for the map task
+  int32 MapperId = 2;     // Unique ID for the mapper
+  int32 NumReduce = 3;    // Number of reducers (used for partitioning)
+  string Task = 4;        // Task description (e.g., "word count")
+}
+
+// ReduceTaskResponse is used by the Master to describe a reduce task to a worker.
+message ReduceTaskResponse {
+  int32 ReducerId = 1;     // Unique ID for the reducer
+  int32 NumMappers = 2;    // Number of mapper outputs to expect
+  string Task = 3;         // Task description (e.g., "word count")
+}
+
+// TaskResponse is a wrapper that can contain either a map or reduce task
+message TaskResponse {
+  oneof task {
+    MapTaskResponse mapTask = 1;
+    ReduceTaskResponse reduceTask = 2;
+    bool done = 3;         // Signal that there are no more tasks
+  }
+}
+
+// ResultRequest is used by the worker to submit the result of its task.
+message ResultRequest {
+  string TaskType = 1;     // "map" or "reduce"
+  int32 TaskId = 2;        // ID of the task (mapper or reducer ID)
+  string OutputFile = 3;   // Path to the output file where results were stored
+  bool Success = 4;        // Whether the task was completed successfully
+}
+
+
+// python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. q2.proto

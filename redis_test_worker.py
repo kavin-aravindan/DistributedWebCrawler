@@ -3,6 +3,12 @@ import requests
 from redis.cluster import RedisCluster 
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse, urlunparse, parse_qsl, urlencode
+from pymongo import MongoClient
+from datetime import datetime
+
+mongo_client = MongoClient('localhost', 27017)
+db = mongo_client['webcrawler']
+collection = db['pages']
 
 startup_nodes = [
     {"host": "localhost", "port": "7000"}
@@ -97,6 +103,15 @@ def extract_content(html):
 
     return content
 
+def store_in_db(url, content):
+    collection.update_one(
+        {'url': url},
+        {"$set": {
+            'content': content,
+            'last_scraped': datetime.utcnow()
+        }},
+        upsert=True
+    )
 
 def get_url():
     url = rc.lpop("url_queue")
@@ -113,6 +128,10 @@ while True:
         break
     
     links, content = scrape_page(url)
+
+    if content:
+        store_in_db(url, content)
+
     for url in links:
         add_url(url)
 

@@ -35,3 +35,15 @@ Install java
 sudo apt install openjdk-11-jdk
 ```
 
+To start Mongo clusters for sharding, run the bash script:
+```
+chmod +x mongo_cluster_setup.sh
+./mongo_cluster_setup.sh
+```
+
+To restart the mongo clusters, run 
+``` 
+pkill mongod
+pkill mongos
+rm -rf mongo_cluster
+```

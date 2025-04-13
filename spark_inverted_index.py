@@ -30,7 +30,10 @@ spark = SparkSession.builder \
 sc = spark.sparkContext
 
 # Load data from MongoDB
-client = MongoClient("localhost", 27017)
+# client = MongoClient("localhost", 27017)
+# Connect to the sharded cluster via mongos (port 27017).
+client = MongoClient("mongodb://localhost:27017")
+
 db = client['webcrawler']
 docs = list(db['pages'].find({}, {"url": 1, "content": 1, "_id": 0}))
 rdd = sc.parallelize(docs)

@@ -5,7 +5,9 @@ from datetime import datetime
 from scraper import scrape_page
 from redis_common import add_url, get_url
 
-mongo_client = MongoClient('localhost', 27017)
+# mongo_client = MongoClient('localhost', 27017)
+# Connect to the mongos router on port 27017.
+mongo_client = MongoClient("mongodb://localhost:27017")
 db = mongo_client['webcrawler']
 collection = db['pages']
 
@@ -20,14 +22,21 @@ print("Cluster running")
 
 
 def store_in_db(url, content):
-    collection.update_one(
-        {'url': url},
-        {"$set": {
-            'content': content,
-            'last_scraped': datetime.utcnow()
-        }},
-        upsert=True
-    )
+    try:
+        result = collection.update_one(
+            {'url': url},  # Shard key
+            {"$set": {
+                'content': content,
+                'last_scraped': datetime.utcnow()
+            }},
+            upsert=True
+        )
+        if result.upserted_id:
+            print(f"Inserted new page: {url}")
+        else:
+            print(f"Updated existing page: {url}")
+    except Exception as e:
+        print(f"MongoDB error storing {url}: {e}")
 
 
     

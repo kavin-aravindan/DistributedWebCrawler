@@ -20,10 +20,18 @@ redis-cli ping
 
 You should receive a 'PONG' in response
 
-Install the python package for redis (use a venv)
+Install the python packages (use a venv)
 
 ```
-pip install redis
+pip install -r requirements.txt
 ```
 
 run create_redis.sh to generate 6 servers(3 original, replicas) on ports 7000-7005
+
+Install mongoDB: https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/
+
+Install java 
+```
+sudo apt install openjdk-11-jdk
+```
+

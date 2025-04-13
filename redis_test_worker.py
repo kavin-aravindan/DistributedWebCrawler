@@ -48,7 +48,7 @@ while True:
     for url in links:
         add_url(rc, url)
 
-    time.sleep(0.1)
+    time.sleep(0.01)
 
 # empty url_set for testing
 rc.delete("url_set")

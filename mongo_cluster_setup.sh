@@ -2,80 +2,131 @@
 
 set -e
 
-BASE_DIR="./mongo_cluster"
-CONFIGSVR_PORT_BASE=26050
-SHARD_PORT_BASE=27018
+# ======================
+# CONFIG
+# ======================
+BASE_DIR=$(pwd)
+DATA_DIR="$BASE_DIR/data"
+CONFIG_REPL_SET="configReplSet"
+SHARD_REPL_SET="shardReplSet"
 MONGOS_PORT=27017
 
-# Clean up old cluster
-rm -rf "$BASE_DIR"
-mkdir -p "$BASE_DIR"
+# ======================
+# HELPER FUNCTIONS
+# ======================
+function check_mongo_shell {
+    if command -v mongosh &>/dev/null; then
+        MONGO_SHELL="mongosh"
+    elif command -v mongo &>/dev/null; then
+        MONGO_SHELL="mongo"
+    else
+        echo "Error: Neither 'mongosh' nor 'mongo' command found. Please install MongoDB shell."
+        exit 1
+    fi
+}
 
-echo "Starting Config Servers..."
-for i in 1 2 3; do
-    mkdir -p "$BASE_DIR/config$i"
-    mongod --configsvr --replSet configReplSet --port $(($CONFIGSVR_PORT_BASE + i)) \
-        --dbpath "$BASE_DIR/config$i" --fork --logpath "$BASE_DIR/config$i/mongod.log"
-done
+function start_mongod {
+    local dbpath=$1
+    local port=$2
+    local logpath=$3
+    local replset=$4
+    local is_config=$5
 
-sleep 3
+    mkdir -p "$dbpath"
+    
+    if [ "$is_config" = true ]; then
+        mongod --port "$port" \
+            --dbpath "$dbpath" \
+            --replSet "$replset" \
+            --configsvr \
+            --bind_ip localhost \
+            --logpath "$logpath" \
+            --fork --logappend
+    else
+        mongod --port "$port" \
+            --dbpath "$dbpath" \
+            --replSet "$replset" \
+            --shardsvr \
+            --bind_ip localhost \
+            --logpath "$logpath" \
+            --fork --logappend
+    fi
+}
 
-echo "Initiating Config Server Replica Set..."
-mongo --port $(($CONFIGSVR_PORT_BASE + 1)) --eval '
+
+# ======================
+# START CONFIG SERVERS
+# ======================
+echo "🔧 Starting Config Servers..."
+start_mongod "$DATA_DIR/config1" 27019 "$DATA_DIR/config1/mongod.log" $CONFIG_REPL_SET true
+start_mongod "$DATA_DIR/config2" 27020 "$DATA_DIR/config2/mongod.log" $CONFIG_REPL_SET true
+start_mongod "$DATA_DIR/config3" 27021 "$DATA_DIR/config3/mongod.log" $CONFIG_REPL_SET true
+
+# Give a moment to stabilize
+sleep 2
+
+# ======================
+# INIT CONFIG REPLICA SET
+# ======================
+check_mongo_shell
+echo "⚙️  Initiating Config Replica Set..."
+
+$MONGO_SHELL --port 27019 <<EOF
 rs.initiate({
-    _id: "configReplSet",
-    configsvr: true,
-    members: [
-        {_id: 0, host: "localhost:26051"},
-        {_id: 1, host: "localhost:26052"},
-        {_id: 2, host: "localhost:26053"}
-    ]
+  _id: "$CONFIG_REPL_SET",
+  configsvr: true,
+  members: [
+    { _id: 0, host: "localhost:27019" },
+    { _id: 1, host: "localhost:27020" },
+    { _id: 2, host: "localhost:27021" }
+  ]
 })
-'
-sleep 5
-
-echo "Starting Shards..."
-for i in 1 2; do
-    mkdir -p "$BASE_DIR/shard$i"
-    mongod --shardsvr --replSet shardReplSet$i --port $(($SHARD_PORT_BASE + i)) \
-        --dbpath "$BASE_DIR/shard$i" --fork --logpath "$BASE_DIR/shard$i/mongod.log"
-done
-
-sleep 3
-
-echo "Initiating Shard Replica Sets..."
-for i in 1 2; do
-mongo --port $(($SHARD_PORT_BASE + i)) --eval "
-rs.initiate({
-    _id: \"shardReplSet$i\",
-    members: [{_id: 0, host: \"localhost:$(($SHARD_PORT_BASE + i))\"}]
-})
-"
-done
+EOF
 
 sleep 5
 
-echo "Starting mongos router..."
-mongos --configdb configReplSet/localhost:26051,localhost:26052,localhost:26053 \
-    --port $MONGOS_PORT --fork --logpath "$BASE_DIR/mongos.log"
-
-sleep 5
-
-echo "Adding shards to mongos..."
-mongo --port $MONGOS_PORT --eval '
-sh.addShard("shardReplSet1/localhost:27019")
-sh.addShard("shardReplSet2/localhost:27020")
-'
+# ======================
+# START SHARD SERVERS
+# ======================
+echo "🚀 Starting Shard Replica Set..."
+start_mongod "$DATA_DIR/shard1" 27022 "$DATA_DIR/shard1/mongod.log" $SHARD_REPL_SET false
+start_mongod "$DATA_DIR/shard2" 27023 "$DATA_DIR/shard2/mongod.log" $SHARD_REPL_SET false
+start_mongod "$DATA_DIR/shard3" 27024 "$DATA_DIR/shard3/mongod.log" $SHARD_REPL_SET false
 
 sleep 2
 
-echo "Enabling sharding on database and collection..."
-mongo --port $MONGOS_PORT --eval '
-sh.enableSharding("webcrawler")
-db = db.getSiblingDB("webcrawler")
-db.pages.createIndex({ url: 1 })
-sh.shardCollection("webcrawler.pages", { url: 1 })
-'
+echo "⚙️  Initiating Shard Replica Set..."
+$MONGO_SHELL --port 27022 <<EOF
+rs.initiate({
+  _id: "$SHARD_REPL_SET",
+  members: [
+    { _id: 0, host: "localhost:27022" },
+    { _id: 1, host: "localhost:27023" },
+    { _id: 2, host: "localhost:27024" }
+  ]
+})
+EOF
 
-echo "MongoDB sharded cluster setup complete."
-echo "Connect with: mongo --port 27017"
+sleep 5
+
+# ======================
+# START MONGOS
+# ======================
+echo "🌐 Starting mongos..."
+mongos --configdb $CONFIG_REPL_SET/localhost:27019,localhost:27020,localhost:27021 \
+       --port $MONGOS_PORT \
+       --bind_ip localhost \
+       --logpath "$DATA_DIR/mongos.log" \
+       --fork --logappend
+
+sleep 3
+
+# ======================
+# ADD SHARD TO CLUSTER
+# ======================
+echo "🔗 Adding shard to mongos..."
+$MONGO_SHELL --port $MONGOS_PORT <<EOF
+sh.addShard("$SHARD_REPL_SET/localhost:27022,localhost:27023,localhost:27024")
+EOF
+
+echo "✅ MongoDB Cluster Setup Complete!"

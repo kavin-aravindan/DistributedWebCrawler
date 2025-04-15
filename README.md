@@ -47,3 +47,39 @@ pkill mongod
 pkill mongos
 rm -rf mongo_cluster
 ```
+
+Install spark:
+```
+wget https://dlcdn.apache.org/spark/spark-3.5.5/spark-3.5.5-bin-hadoop3.tgz
+tar -xvf spark-3.5.5-bin-hadoop3.tgz
+```
+
+To your .bashrc file add
+```
+export SPARK_HOME=~/spark
+export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
+```
+
+Activate changes using `source ~/.bashrc`
+
+Create `spark-env.sh` in `$SPARK_HOME/conf/`
+Add the lines
+```
+SPARK_MASTER_HOST=127.0.0.1
+SPARK_WORKER_INSTANCES=4
+SPARK_WORKER_CORES=1
+SPARK_WORKER_MEMORY=1g
+```
+Depending on your system specifications you can change the number of worker instances, cores per worker, and memory per worker. This will change the number of workers spawned on one device.
+
+To set up the cluster run 
+```
+chmod +x create_spark_cluster.sh
+./create_spark_cluster.sh
+```
+
+To stop the master and workers use
+```
+~/spark/sbin/stop-master.sh
+~/spark/sbin/stop-worker.sh
+```

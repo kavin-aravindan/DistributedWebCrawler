@@ -2,8 +2,15 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import explode, split, col
 from pymongo import MongoClient
+from datetime import datetime
 import re
 import math
+import os
+import csv
+import time
+
+metrics_file = "metrics/indexing_metrics.csv"
+start_time = time.time()
 
 def preprocess_and_tokenize(content):
     # Tokenization and preprocessing logic
@@ -80,3 +87,18 @@ final_ii = tfidf_rdd.groupByKey().mapValues(list)
 
 # Save to file (or MongoDB)
 final_ii.saveAsTextFile("inverted_index")
+
+
+end_time = time.time()
+time_taken = end_time - start_time
+
+# Save to CSV
+file_exist = os.path.isfile(metrics_file)
+with open(metrics_file, mode='a', newline='') as file:
+    writer = csv.writer(file)
+    if not file_exist:
+        writer.writerow(["timestamp", "time_taken", "docs_count", "terms_count"])
+    writer.writerow([datetime.utcnow(), time_taken, N, final_ii.count()])
+
+# Stop the Spark session
+spark.stop()

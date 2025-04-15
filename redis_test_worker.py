@@ -109,10 +109,10 @@ while True:
             writer.writerow([time_stamp, cpu_usage, memory_usage])
         prev_time = time.time()
 
-    time.sleep(0.1)
+    time.sleep(0.5)
 
 # empty url_set for testing
 # rc.delete("url_set")
 # rc.delete("url_queue")
 
-#15:39:43
+#17:24:10

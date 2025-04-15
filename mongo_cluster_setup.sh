@@ -124,7 +124,7 @@ sleep 3
 # ======================
 # ADD SHARD TO CLUSTER
 # ======================
-echo "🔗 Adding shard to mongos..."
+echo "Adding shard to mongos..."
 $MONGO_SHELL --port $MONGOS_PORT <<EOF
 sh.addShard("$SHARD_REPL_SET/localhost:27022,localhost:27023,localhost:27024")
 EOF

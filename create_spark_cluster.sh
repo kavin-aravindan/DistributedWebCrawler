@@ -60,7 +60,7 @@ echo "Starting schedule to run script every minute..."
 while true; do
   run_python_script
   echo "Waiting for next execution..."
-  sleep 20
+  sleep 60
 done
 
 # ~/spark/sbin/stop-master.sh

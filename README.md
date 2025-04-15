@@ -86,7 +86,7 @@ exiting the script will kill the workers and master.
 # How to run
 pkill mongod
 pkill mongos
-rm -rf mongo_cluster
+rm -rf data
 chmod +x mongo_cluster_setup.sh
 ./mongo_cluster_setup.sh
 chmod +x create_spark_cluster.sh

@@ -31,6 +31,7 @@ for url in urls:
 # keep checking for failed links
 while True:
     item = rc.rpoplpush(processing_queue, url_queue)
-    if item:
+    while item:
         print(f'requeueued {item.decode("utf-8")}')
+        item = rc.rpoplpush(processing_queue, url_queue)
     time.sleep(30)

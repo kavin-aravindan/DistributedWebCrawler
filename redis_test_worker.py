@@ -15,8 +15,13 @@ startup_nodes = [
     {"host": "localhost", "port": "7000"}
     ]
 
+BLOCKING_TIMEOUT = 3
 
-rc = RedisCluster(host="localhost", port=7000)
+url_queue = '{crawler}url_queue'
+url_set = '{crawler}url_set'
+processing_queue = '{crawler}processing_queue'
+
+rc = RedisCluster(host="localhost", port=7000, decode_responses=False)
 rc.ping()
 print("Cluster running")
 
@@ -41,9 +46,11 @@ def store_in_db(url, content):
 
     
 while True:
-    url = get_url(rc)
+    # url = get_url(rc)
+    url = rc.brpoplpush(url_queue, processing_queue, timeout=BLOCKING_TIMEOUT)
     if url is None:
-        break
+        print("No urls in the queue")
+        continue
     
     # convert the url to a string
     url = url.decode('utf-8')
@@ -56,9 +63,11 @@ while True:
 
     for url in links:
         add_url(rc, url)
+    
+    remove = rc.lrem(processing_queue, 1, url)
 
-    time.sleep(0.01)
+    time.sleep(0.1)
 
 # empty url_set for testing
-rc.delete("url_set")
-rc.delete("url_queue")
+# rc.delete("url_set")
+# rc.delete("url_queue")

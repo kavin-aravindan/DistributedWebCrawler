@@ -5,6 +5,19 @@ import json
 
 import socket
 
+def convert_sets_to_lists(obj):
+    """Recursively converts sets to lists within an object."""
+    if isinstance(obj, set):
+        return sorted(list(obj)) 
+    elif isinstance(obj, list):
+        return [convert_sets_to_lists(item) for item in obj]
+    elif isinstance(obj, tuple):
+        return [convert_sets_to_lists(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {key: convert_sets_to_lists(value) for key, value in obj.items()}
+    else:
+        return obj
+
 def find_free_port():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(('', 0))
@@ -36,14 +49,17 @@ def search():
 
     exact, partial = cached_search(query)
 
-    if not exact and not partial:
+    exact_serializable = convert_sets_to_lists(exact)
+    partial_serializable = convert_sets_to_lists(partial)
+
+    if not exact_serializable and not partial_serializable:
         return jsonify({"exact": [], "partial": [], "message": "No results found"})
 
     return jsonify({
-        "exact": exact[:10], 
-        "partial": partial[:10],
-        "more_exact": exact[10:],
-        "more_partial": partial[10:]
+        "exact": exact_serializable[:10], 
+        "partial": partial_serializable[:10],
+        "more_exact": exact_serializable[10:],
+        "more_partial": partial_serializable[10:]
     })
 
 # def dummy_search():

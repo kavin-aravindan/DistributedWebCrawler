@@ -4,11 +4,13 @@ from redis_common import add_url, get_url
 import re
 import ast  
 from collections import defaultdict
+import time
 
 # Initialize SparkSession
 spark = SparkSession.builder \
     .appName("DistributedWebCrawler") \
     .getOrCreate()
+sc = spark.sparkContext
 
 def preprocess_and_tokenize(content):
     # Tokenization and preprocessing logic
@@ -77,28 +79,32 @@ def ranked_search(search_term, inverted_index_file):
             final_results_partial.append((url, data['score'], data['tokens']))
     # sort by score
     final_results_partial.sort(key=lambda x: x[1], reverse=True)
-    
-    # print results
-    i = 0
-    print("Exact matches:")
-    for url, score, tokens in final_results_exact:
-        i += 1
-        print(f"URL: {url}, Score: {score}, Tokens: {tokens}")
-        if i > 10:
-            break
-    i = 0
-    print("\nPartial matches:")
-    for url, score, tokens in final_results_partial:
-        i += 1
-        print(f"URL: {url}, Score: {score}, Tokens: {tokens}")
-        if i > 10:
-            break
-    print("\n")
-    
+   
     return final_results_exact, final_results_partial
 
-while True:
-    search_term = input("Enter a search term (or 'exit' to quit): ")
-    if search_term.lower() == "exit":
-        break
-    ranked_search(search_term, "inverted_index")
+
+if __name__ == "__main__":
+    while True:
+        search_term = input("Enter a search term (or 'exit' to quit): ")
+        if search_term.lower() == "exit":
+            break
+        start_time = time.time()
+        final_results_exact, final_results_partial = ranked_search(search_term, "inverted_index")
+        print(f"Search completed in {time.time() - start_time} seconds")
+        # print results
+        i = 0
+        print("Exact matches:")
+        for url, score, tokens in final_results_exact:
+            i += 1
+            print(f"URL: {url}, Score: {score}, Tokens: {tokens}")
+            if i > 10:
+                break
+        i = 0
+        print("\nPartial matches:")
+        for url, score, tokens in final_results_partial:
+            i += 1
+            print(f"URL: {url}, Score: {score}, Tokens: {tokens}")
+            if i > 10:
+                break
+        print("\n")
+    

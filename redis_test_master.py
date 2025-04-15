@@ -28,14 +28,6 @@ urls = [
 for url in urls:
     add_url(rc, url)
     
-print("Master: Checking initial queue state...")
-initial_len = rc.llen('{crawler}url_queue')
-print(f"Master: Length of {url_queue} = {initial_len}")
-is_member = rc.sismember('{crawler}url_set', 'https://books.toscrape.com/index.html'.encode('utf-8'))
-print(f"Master: Is initial URL in {url_set}? {is_member}")
-if initial_len == 0:
-    print("Master WARNING: URL Queue is empty immediately after adding!")
-    
 # keep checking for failed links
 while True:
     item = rc.rpoplpush(processing_queue, url_queue)

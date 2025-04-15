@@ -57,7 +57,7 @@ function start_mongod {
 # ======================
 # START CONFIG SERVERS
 # ======================
-echo "🔧 Starting Config Servers..."
+echo "Starting Config Servers..."
 start_mongod "$DATA_DIR/config1" 27019 "$DATA_DIR/config1/mongod.log" $CONFIG_REPL_SET true
 start_mongod "$DATA_DIR/config2" 27020 "$DATA_DIR/config2/mongod.log" $CONFIG_REPL_SET true
 start_mongod "$DATA_DIR/config3" 27021 "$DATA_DIR/config3/mongod.log" $CONFIG_REPL_SET true
@@ -69,7 +69,7 @@ sleep 2
 # INIT CONFIG REPLICA SET
 # ======================
 check_mongo_shell
-echo "⚙️  Initiating Config Replica Set..."
+echo "Initiating Config Replica Set..."
 
 $MONGO_SHELL --port 27019 <<EOF
 rs.initiate({
@@ -88,14 +88,14 @@ sleep 5
 # ======================
 # START SHARD SERVERS
 # ======================
-echo "🚀 Starting Shard Replica Set..."
+echo "Starting Shard Replica Set..."
 start_mongod "$DATA_DIR/shard1" 27022 "$DATA_DIR/shard1/mongod.log" $SHARD_REPL_SET false
 start_mongod "$DATA_DIR/shard2" 27023 "$DATA_DIR/shard2/mongod.log" $SHARD_REPL_SET false
 start_mongod "$DATA_DIR/shard3" 27024 "$DATA_DIR/shard3/mongod.log" $SHARD_REPL_SET false
 
 sleep 2
 
-echo "⚙️  Initiating Shard Replica Set..."
+echo "Initiating Shard Replica Set..."
 $MONGO_SHELL --port 27022 <<EOF
 rs.initiate({
   _id: "$SHARD_REPL_SET",
@@ -112,7 +112,7 @@ sleep 5
 # ======================
 # START MONGOS
 # ======================
-echo "🌐 Starting mongos..."
+echo "Starting mongos..."
 mongos --configdb $CONFIG_REPL_SET/localhost:27019,localhost:27020,localhost:27021 \
        --port $MONGOS_PORT \
        --bind_ip localhost \
@@ -129,4 +129,4 @@ $MONGO_SHELL --port $MONGOS_PORT <<EOF
 sh.addShard("$SHARD_REPL_SET/localhost:27022,localhost:27023,localhost:27024")
 EOF
 
-echo "✅ MongoDB Cluster Setup Complete!"
+echo "MongoDB Cluster Setup Complete!"

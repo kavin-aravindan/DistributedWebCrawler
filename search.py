@@ -97,8 +97,9 @@ def ranked_search(search_term, inverted_index_file):
     
     return final_results_exact, final_results_partial
 
-while True:
-    search_term = input("Enter a search term (or 'exit' to quit): ")
-    if search_term.lower() == "exit":
-        break
-    ranked_search(search_term, "inverted_index")
+if __name__ == "__main__":
+    while True:
+        search_term = input("Enter a search term (or 'exit' to quit): ")
+        if search_term.lower() == "exit":
+            break
+        ranked_search(search_term, "inverted_index")

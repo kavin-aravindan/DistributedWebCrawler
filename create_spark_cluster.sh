@@ -1,7 +1,17 @@
 #!/bin/bash
 
+function kill_master_workers() {
+  echo "Stopping Spark master and workers..."
+  ~/spark/sbin/stop-master.sh
+  ~/spark/sbin/stop-worker.sh
+  exit
+}
+
+trap 'kill_master_workers' SIGINT SIGTERM EXIT
 # Path to Spark home directory - replace with your actual path
 SPARK_HOME=~/spark
+
+source ../proj_venv/bin/activate
 
 # Path to your Python script - replace with your actual path
 PYTHON_SCRIPT="spark_inverted_index.py"
@@ -33,7 +43,7 @@ start_workers() {
 # Function to run the Python script
 run_python_script() {
   echo "Running Python script: $PYTHON_SCRIPT"
-  python $PYTHON_SCRIPT
+  python3 $PYTHON_SCRIPT
 }
 
 # Main script execution
@@ -50,7 +60,7 @@ echo "Starting schedule to run script every minute..."
 while true; do
   run_python_script
   echo "Waiting for next execution..."
-  sleep 5
+  sleep 20
 done
 
 # ~/spark/sbin/stop-master.sh

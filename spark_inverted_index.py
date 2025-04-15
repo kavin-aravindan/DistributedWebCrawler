@@ -8,6 +8,7 @@ import math
 import os
 import csv
 import time
+import shutil
 
 metrics_file = "metrics/indexing_metrics.csv"
 start_time = time.time()
@@ -50,6 +51,10 @@ rdd.cache()
 
 # find total num of docs
 N = rdd.count()
+if N == 0:
+    print("No documents found in the collection.")
+    exit(1)
+print("Documents loaded from MongoDB")
 print(f"Total number of documents: {N}")
 
 # Compute TF for each doc
@@ -86,6 +91,9 @@ rdd.unpersist()
 final_ii = tfidf_rdd.groupByKey().mapValues(list)
 
 # Save to file (or MongoDB)
+if os.path.exists('inverted_index'):
+    shutil.rmtree('inverted_index')
+
 final_ii.saveAsTextFile("inverted_index")
 
 
@@ -93,6 +101,8 @@ end_time = time.time()
 time_taken = end_time - start_time
 
 # Save to CSV
+if not os.path.exists('metrics'):
+    os.mkdir('metrics')
 file_exist = os.path.isfile(metrics_file)
 with open(metrics_file, mode='a', newline='') as file:
     writer = csv.writer(file)

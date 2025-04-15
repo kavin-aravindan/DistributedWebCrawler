@@ -51,6 +51,7 @@ rm -rf mongo_cluster
 Install spark:
 ```
 wget https://dlcdn.apache.org/spark/spark-3.5.5/spark-3.5.5-bin-hadoop3.tgz
+sudo mv spark-3.5.5-bin-hadoop3/ ~/spark
 tar -xvf spark-3.5.5-bin-hadoop3.tgz
 ```
 
@@ -78,8 +79,23 @@ chmod +x create_spark_cluster.sh
 ./create_spark_cluster.sh
 ```
 
-To stop the master and workers use
+exiting the script will kill the workers and master.
+
+# How to run
+pkill mongod
+pkill mongos
+rm -rf mongo_cluster
+chmod +x mongo_cluster_setup.sh
+./mongo_cluster_setup.sh
+chmod +x create_spark_cluster.sh
+./create_spark_cluster.sh
+chmod +x create_redis.sh
+./create_redis.sh
+run master
+run worker(s)
+run search
+<!-- To stop the master and workers use
 ```
 ~/spark/sbin/stop-master.sh
 ~/spark/sbin/stop-worker.sh
-```
+``` -->

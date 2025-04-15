@@ -50,6 +50,7 @@ while True:
     url = rc.brpoplpush(url_queue, processing_queue, timeout=BLOCKING_TIMEOUT)
     if url is None:
         print("No urls in the queue")
+        time.sleep(1)
         continue
     
     # convert the url to a string
@@ -66,8 +67,10 @@ while True:
     
     remove = rc.lrem(processing_queue, 1, url)
 
-    time.sleep(0.1)
+    time.sleep(1)
 
 # empty url_set for testing
 # rc.delete("url_set")
 # rc.delete("url_queue")
+
+#15:39:43

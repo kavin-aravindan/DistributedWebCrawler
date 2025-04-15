@@ -1,0 +1,45 @@
+{
+    "exact": [
+      ["http://example.com/page1", 15, ["python", "spark"]],
+      ["http://example.com/page2", 10, ["python", "data"]],
+      ["http://example.com/page3", 5, ["python"]],
+      ["http://example.com/page4", 3, ["spark"]],
+        ["http://example.com/page5", 2, ["python", "spark"]],
+        ["http://example.com/page6", 1, ["python"]],
+        ["http://example.com/page7", 1, ["spark"]],
+        ["http://example.com/page8", 1, ["python", "data"]],
+        ["http://example.com/page9", 1, ["python"]],
+        ["http://example.com/page10", 1, ["spark"]],
+        ["http://example.com/page11", 1, ["python", "data"]],
+        ["http://example.com/page12", 1, ["python"]],
+        ["http://example.com/page13", 1, ["spark"]],
+        ["http://example.com/page14", 1, ["python", "data"]],
+        ["http://example.com/page15", 1, ["python"]],
+        ["http://example.com/page16", 1, ["spark"]],
+        ["http://example.com/page17", 1, ["python", "data"]],
+        ["http://example.com/page18", 1, ["python"]],
+        ["http://example.com/page19", 1, ["spark"]],
+        ["http://example.com/page20", 1, ["python", "data"]]
+    ],
+    "partial": [
+      ["http://example.com/page3", 5, ["python"]],
+      ["http://example.com/page4", 3, ["spark"]],
+        ["http://example.com/page5", 2, ["python", "spark"]],
+        ["http://example.com/page6", 1, ["python"]],
+        ["http://example.com/page7", 1, ["spark"]],
+        ["http://example.com/page8", 1, ["python", "data"]],
+        ["http://example.com/page9", 1, ["python"]],
+        ["http://example.com/page10", 1, ["spark"]],
+        ["http://example.com/page11", 1, ["python", "data"]],
+        ["http://example.com/page12", 1, ["python"]],
+        ["http://example.com/page13", 1, ["spark"]],
+        ["http://example.com/page14", 1, ["python", "data"]],
+        ["http://example.com/page15", 1, ["python"]],
+        ["http://example.com/page16", 1, ["spark"]],
+        ["http://example.com/page17", 1, ["python", "data"]],
+        ["http://example.com/page18", 1, ["python"]],
+        ["http://example.com/page19", 1, ["spark"]],
+        ["http://example.com/page20", 1, ["python", "data"]]
+    ]
+  }
+  

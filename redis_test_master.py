@@ -23,7 +23,8 @@ rc.ping()
 print("Cluster running")
 
 urls = [
-    "https://books.toscrape.com/index.html"
+    # "https://books.toscrape.com/index.html"
+    "https://en.wikipedia.org/wiki/Main_Page"
 ]
 for url in urls:
     add_url(rc, url)

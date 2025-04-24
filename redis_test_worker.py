@@ -6,6 +6,7 @@ from redis_common import add_url, get_url
 import os
 import csv
 import psutil
+import random
 
 # MongoDB setup
 mongo_client = MongoClient("mongodb://localhost:27017")
@@ -87,7 +88,11 @@ while True:
 
     print(f"Scraping {url}")
 
-    links, content = scrape_page(url)
+    try:
+        links, content = scrape_page(url)
+    except:
+        # give up on the link
+        continue
 
     if content:
         store_in_db(url, content)
@@ -109,7 +114,7 @@ while True:
             writer.writerow([time_stamp, cpu_usage, memory_usage])
         prev_time = time.time()
 
-    time.sleep(0.5)
+    time.sleep(random.uniform(0.7,2.0))
 
 # empty url_set for testing
 # rc.delete("url_set")

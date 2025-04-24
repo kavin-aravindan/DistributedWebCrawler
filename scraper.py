@@ -1,13 +1,23 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse, urlunparse, parse_qsl, urlencode
+import time
+
+# --- Configuration for Politeness ---
+REQUEST_COOLDOWN_SECONDS = 5
+HEADERS = {
+    'User-Agent': 'DistubutedWebCrawler/1.0 (kavin.aravindan@research.iiit.ac.in)'
+}
+REQUEST_TIMEOUT = 15
 
 def scrape_page(url):
     if not url.startswith("http"):
         url = "http://" + url
 
     try:
-        response = requests.get(url)
+        time.sleep(REQUEST_COOLDOWN_SECONDS)
+        response = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+        response.raise_for_status()
         if response.status_code == 200:
             print(f"Successfully scraped {url}")
             return extract_links(response.text, url), extract_content(response.text)
